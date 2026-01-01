@@ -13,7 +13,10 @@ import AdminLoginPage from './components/AdminLoginPage';
 import AdminDashboard from './components/AdminDashboard';
 
 import StudentDashboard from './components/StudentDashboard';
-import StaffDashboard from './components/StaffDashboard'; // Single component for all staff dashboards
+import CanteenDashboard from './components/CanteenDashboard';
+import StationeryDashboard from './components/StationeryDashboard';
+import HostelDashboard from './components/HostelDashboard';
+
 
 
 function App() {
@@ -38,10 +41,11 @@ function App() {
       
         <Route path="/student/dashboard" element={<StudentDashboard />} />
 
-        {/* ✅ STAFF DASHBOARDS (All use the same component) */}
-        <Route path="/canteen/dashboard" element={<StaffDashboard />} />
-        <Route path="/stationery/dashboard" element={<StaffDashboard />} />
-        <Route path="/hostel/dashboard" element={<StaffDashboard />} />
+        {/* ✅ UPDATE ROUTES TO USE SPECIFIC COMPONENTS */}
+        <Route path="/canteen/dashboard" element={<CanteenDashboard />} />
+        <Route path="/stationery/dashboard" element={<StationeryDashboard />} />
+        <Route path="/hostel/dashboard" element={<HostelDashboard />} />
+        
       </Routes>
     </Router>
   

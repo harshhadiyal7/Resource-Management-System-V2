@@ -6,7 +6,7 @@ const { verifyToken, checkRole } = require('../middleware/auth');
 
 // GET all items (Any logged-in user)
 router.get('/items', verifyToken, (req, res) => {
-    const sql = "SELECT * FROM hostel_items ORDER BY created_at DESC";
+    const sql = "SELECT * FROM hostel_items";
     db.query(sql, (err, results) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(results);
