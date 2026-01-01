@@ -60,10 +60,5 @@ A comprehensive Full-Stack web application designed to streamline resource manag
     npm start
     ```
 
-## 📸 Screenshots
 
-*(You can upload your screenshots to the repo and link them here later)*
-
----
-
-**Developed by [Your Name]**
+**Developed by HARSH HADIYAL**
