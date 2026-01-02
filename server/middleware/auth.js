@@ -50,10 +50,13 @@ const verifyToken = (req, res, next) => {
     });
 };
 
-// 2. Check Role (Authorization)
+// Middleware fix to handle case sensitivity
 const checkRole = (allowedRoles) => {
     return (req, res, next) => {
-        if (!allowedRoles.includes(req.user.role)) {
+        const userRole = req.user.role.toLowerCase(); // Force lowercase
+        const permitted = allowedRoles.map(r => r.toLowerCase());
+        
+        if (!permitted.includes(userRole)) {
             return res.status(403).json({ message: "You do not have permission." });
         }
         next();

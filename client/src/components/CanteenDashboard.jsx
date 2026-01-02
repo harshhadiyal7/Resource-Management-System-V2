@@ -107,10 +107,7 @@ const CanteenDashboard = () => {
                 <input type="text" placeholder="Item Name (e.g. Burger)" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full bg-[#0f172a] border border-slate-600 rounded p-3" required />
                 <input type="number" placeholder="Price (₹)" value={formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} className="w-full bg-[#0f172a] border border-slate-600 rounded p-3" required />
                 <input type="text" placeholder="Quantity (e.g. 1 Plate)" value={formData.quantity} onChange={(e) => setFormData({...formData, quantity: e.target.value})} className="w-full bg-[#0f172a] border border-slate-600 rounded p-3" required />
-                <select value={formData.status} onChange={(e) => setFormData({...formData, status: e.target.value})} className="w-full bg-[#0f172a] border border-slate-600 rounded p-3">
-                    <option value="Available">Available</option>
-                    <option value="Unavailable">Unavailable</option>
-                </select>
+                
                 <button type="submit" className="w-full bg-amber-600 hover:bg-amber-700 py-3 rounded font-bold">{editingId ? 'Update' : 'Add'}</button>
                 {editingId && <button type="button" onClick={() => {setEditingId(null); setFormData({name:'', price:'', quantity:'', status:'Available'})}} className="w-full mt-2 text-slate-400">Cancel</button>}
               </form>
@@ -120,20 +117,14 @@ const CanteenDashboard = () => {
           {/* LIST */}
           <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {items.map(item => {
-              // Status Logic
-              const statusText = item.status || 'Available';
-              const isAvailable = statusText.toLowerCase() === 'available';
-              const statusColor = isAvailable ? 'bg-emerald-500' : 'bg-red-500';
-
+              
               return (
                 <div key={item.id} className="bg-[#1e293b] rounded-2xl border border-slate-700 overflow-hidden hover:border-amber-500/50 hover:shadow-[0_0_20px_rgba(245,158,11,0.1)] transition group flex flex-col h-full">
                   
                   {/* 1. Header with Icon & Status Badge */}
                   <div className="h-28 bg-slate-800/50 flex items-center justify-center text-5xl relative overflow-hidden group-hover:bg-amber-900/10 transition">
                       🍔
-                      <div className={`absolute top-3 right-3 text-[10px] font-bold px-2 py-1 rounded uppercase text-white shadow-md ${statusColor}`}>
-                          {statusText}
-                      </div>
+                      
                   </div>
 
                   {/* 2. Content */}

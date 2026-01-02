@@ -117,9 +117,7 @@ const CanteenCard = ({ item }) => {
         <div className="bg-[#1e293b] rounded-2xl border border-slate-700 overflow-hidden hover:border-amber-500/50 hover:shadow-[0_0_20px_rgba(245,158,11,0.1)] transition group flex flex-col h-full">
             <div className="h-32 bg-slate-800/50 flex items-center justify-center text-5xl relative overflow-hidden group-hover:bg-amber-900/10 transition">
                 🍔
-                <div className={`absolute top-3 right-3 text-[10px] font-bold px-2 py-1 rounded uppercase ${isAvailable ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'}`}>
-                    {item.status || 'Available'}
-                </div>
+                
             </div>
             <div className="p-5 flex flex-col flex-1">
                 <div className="flex-1">

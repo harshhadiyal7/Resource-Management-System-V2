@@ -49,9 +49,9 @@ router.get('/inventory', (req, res) => {
     const inventoryData = [];
 
     // Query 1: Canteen
-    const sqlCanteen = "SELECT id, item_name as name, price, 'CANTEEN' as category, 'Available' as status FROM canteen_items"; 
+    const sqlCanteen = "SELECT id, item_name as name, price, 'CANTEEN' as category, quantity, 'Available' as status FROM canteen_items"; 
     // Query 2: Stationery
-    const sqlStationery = "SELECT id, item_name as name, price, 'STATIONERY' as category, 'Available' as status FROM stationery_items";
+    const sqlStationery = "SELECT id, item_name as name, price, 'STATIONERY' as category, stock_level, 'Available' as status FROM stationery_items";
     // Query 3: Hostel
    const sqlHostel = "SELECT id, item_name as name, 0 as price, 'HOSTEL' as category, availability_status as status FROM hostel_items";
     // Execute sequentially

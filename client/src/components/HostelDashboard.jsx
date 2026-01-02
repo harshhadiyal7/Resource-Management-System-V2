@@ -40,19 +40,24 @@ const HostelDashboard = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
         const payload = {
             item_name: formData.name,
+            room_number: formData.name, // Send both to be safe
             type: formData.type,
+
+            // ⚠️ CRITICAL FIX: Send both naming conventions
+            status: formData.status,
             availability_status: formData.status
         };
 
         try {
             if (editingId) {
                 await axios.put(`http://localhost:5000/api/hostel/update/${editingId}`, payload, { headers: { Authorization: `Bearer ${token}` } });
-                alert("Room Updated!");
+                alert("Room Updated Successfully!");
             } else {
                 await axios.post('http://localhost:5000/api/hostel/add', payload, { headers: { Authorization: `Bearer ${token}` } });
-                alert("Room Added!");
+                alert("Room Added Successfully!");
             }
             setEditingId(null);
             setFormData({ name: '', type: '', status: 'Available' });
@@ -70,12 +75,19 @@ const HostelDashboard = () => {
 
     const handleEditClick = (item) => {
         setEditingId(item.id);
+
+        // 1. Get raw status from DB
+        let currentStatus = item.status || item.availability_status || 'Available';
+
+        // 2. Fix Capitalization (e.g. "OCCUPIED" -> "Occupied") to match your <option> values
+        if (currentStatus) {
+            currentStatus = currentStatus.charAt(0).toUpperCase() + currentStatus.slice(1).toLowerCase();
+        }
+
         setFormData({
-            // Check ALL possible names for the room
             name: item.room_number || item.item_name || '',
             type: item.type || '',
-            // Check ALL possible names for status
-            status: item.availability_status || item.status || 'Available'
+            status: currentStatus
         });
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
@@ -118,7 +130,7 @@ const HostelDashboard = () => {
                         >
                             <option value="Available">Available</option>
                             <option value="Occupied">Occupied</option>
-                            
+
                         </select>
 
                         {/* Submit Button */}
@@ -145,53 +157,53 @@ const HostelDashboard = () => {
                     </form>
                     {/* LIST */}
                     <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {items.map(item => {
-              // Robust Data Checking
-              const displayName = item.room_number || item.item_name || 'Room';
-              const rawStatus = item.status || item.availability_status || 'Available';
-              const isAvailable = rawStatus.toLowerCase() === 'available';
-              
-              const badgeClass = isAvailable 
-                  ? 'text-emerald-400 border-emerald-900 bg-emerald-900/20' 
-                  : 'text-red-400 border-red-900 bg-red-900/20';
+                        {items.map(item => {
+                            // Robust Data Checking
+                            const displayName = item.room_number || item.item_name || 'Room';
+                            const rawStatus = item.status || item.availability_status || 'Available';
+                            const isAvailable = rawStatus.toLowerCase() === 'available';
 
-              return (
-                <div key={item.id} className="bg-[#1e293b] rounded-2xl border border-slate-700 p-5 hover:border-emerald-500/50 hover:shadow-[0_0_20px_rgba(16,185,129,0.1)] transition group flex flex-col h-full relative overflow-hidden">
-                  
-                  {/* 1. Header: Icon & Status */}
-                  <div className="flex justify-between items-start mb-4 relative z-10">
-                      <div className="bg-slate-800 p-3 rounded-lg text-2xl shadow-inner group-hover:scale-110 transition">🛏️</div>
-                      <span className={`text-[10px] font-bold px-2 py-1 rounded border uppercase ${badgeClass}`}>
-                          {rawStatus}
-                      </span>
-                  </div>
-                  
-                  {/* 2. Room Details */}
-                  <div className="mb-6 flex-1 relative z-10">
-                      <div className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">Room Number</div>
-                      <h3 className="text-3xl font-bold text-white mb-2 group-hover:text-emerald-400 transition">{displayName}</h3>
-                      
-                      <div className="inline-flex items-center gap-1.5 bg-slate-800/50 px-2 py-1 rounded text-xs text-slate-300 border border-slate-700">
-                          <span>❄️</span> {item.type || 'Standard'}
-                      </div>
-                  </div>
+                            const badgeClass = isAvailable
+                                ? 'text-emerald-400 border-emerald-900 bg-emerald-900/20'
+                                : 'text-red-400 border-red-900 bg-red-900/20';
 
-                  {/* 3. Footer Actions */}
-                  <div className="border-t border-slate-700 pt-4 flex justify-between items-center relative z-10">
-                      <div className="text-xs text-slate-500 font-bold">ACTIONS</div>
-                      <div className="flex gap-3">
-                          <button onClick={() => handleEditClick(item)} className="text-blue-400 text-xs font-bold hover:text-white transition bg-blue-500/10 hover:bg-blue-600 hover:shadow-lg hover:shadow-blue-500/30 px-3 py-1.5 rounded-lg border border-blue-500/20">
-                              Edit
-                          </button>
-                          <button onClick={() => handleDelete(item.id)} className="text-red-400 text-xs font-bold hover:text-white transition bg-red-500/10 hover:bg-red-600 hover:shadow-lg hover:shadow-red-500/30 px-3 py-1.5 rounded-lg border border-red-500/20">
-                              Delete
-                          </button>
-                      </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                            return (
+                                <div key={item.id} className="bg-[#1e293b] rounded-2xl border border-slate-700 p-5 hover:border-emerald-500/50 hover:shadow-[0_0_20px_rgba(16,185,129,0.1)] transition group flex flex-col h-full relative overflow-hidden">
+
+                                    {/* 1. Header: Icon & Status */}
+                                    <div className="flex justify-between items-start mb-4 relative z-10">
+                                        <div className="bg-slate-800 p-3 rounded-lg text-2xl shadow-inner group-hover:scale-110 transition">🛏️</div>
+                                        <span className={`text-[10px] font-bold px-2 py-1 rounded border uppercase ${badgeClass}`}>
+                                            {rawStatus}
+                                        </span>
+                                    </div>
+
+                                    {/* 2. Room Details */}
+                                    <div className="mb-6 flex-1 relative z-10">
+                                        <div className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">Room Number</div>
+                                        <h3 className="text-3xl font-bold text-white mb-2 group-hover:text-emerald-400 transition">{displayName}</h3>
+
+                                        <div className="inline-flex items-center gap-1.5 bg-slate-800/50 px-2 py-1 rounded text-xs text-slate-300 border border-slate-700">
+                                            <span>❄️</span> {item.type || 'Standard'}
+                                        </div>
+                                    </div>
+
+                                    {/* 3. Footer Actions */}
+                                    <div className="border-t border-slate-700 pt-4 flex justify-between items-center relative z-10">
+                                        <div className="text-xs text-slate-500 font-bold">ACTIONS</div>
+                                        <div className="flex gap-3">
+                                            <button onClick={() => handleEditClick(item)} className="text-blue-400 text-xs font-bold hover:text-white transition bg-blue-500/10 hover:bg-blue-600 hover:shadow-lg hover:shadow-blue-500/30 px-3 py-1.5 rounded-lg border border-blue-500/20">
+                                                Edit
+                                            </button>
+                                            <button onClick={() => handleDelete(item.id)} className="text-red-400 text-xs font-bold hover:text-white transition bg-red-500/10 hover:bg-red-600 hover:shadow-lg hover:shadow-red-500/30 px-3 py-1.5 rounded-lg border border-red-500/20">
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
             </div>
         </div>
