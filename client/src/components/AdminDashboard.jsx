@@ -326,7 +326,7 @@ const AdminCanteenCard = ({ item }) => {
     return (
         <div className="bg-[#1e293b] rounded-2xl border border-slate-700 overflow-hidden hover:border-amber-500/50 hover:shadow-[0_0_20px_rgba(245,158,11,0.1)] transition group flex flex-col h-full">
             <div className="h-28 bg-slate-800/50 flex items-center justify-center text-5xl relative overflow-hidden group-hover:bg-amber-900/10 transition">
-                🍔
+                🍽️🥤
 
             </div>
             <div className="p-5 flex flex-col flex-1">
