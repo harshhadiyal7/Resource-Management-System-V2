@@ -364,21 +364,94 @@ const AdminStationeryCard = ({ item, onDelete }) => {
 };
 
 const AdminHostelCard = ({ item, onDelete }) => {
-    const isAvailable = (item.status || 'available').toLowerCase() === 'available';
-    const badgeClass = isAvailable ? 'text-emerald-400 border-emerald-900 bg-emerald-900/20' : 'text-red-400 border-red-900 bg-red-900/20';
+    // State to toggle details view
+    const [showDetails, setShowDetails] = useState(false);
+
+    // 1. Robust Data Handling
+    const displayName = item.room_number || item.item_name || 'Room';
+    const rawStatus = item.status || item.availability_status || 'Available';
+    const isAvailable = rawStatus.toLowerCase() === 'available';
+
+    // 2. Check if extra details exist (so we know if we should show the button)
+    const hasExtraDetails = (item.hostel_name && item.hostel_name.trim() !== "") || 
+                            (item.address && item.address.trim() !== "") || 
+                            (item.contact_number && item.contact_number.trim() !== "");
+
+    // 3. Dynamic Styling
+    const badgeClass = isAvailable 
+        ? 'text-emerald-400 border-emerald-900 bg-emerald-900/20' 
+        : 'text-red-400 border-red-900 bg-red-900/20';
+
     return (
         <div className="bg-[#1e293b] rounded-2xl border border-slate-700 p-5 hover:border-emerald-500/50 hover:shadow-[0_0_20px_rgba(16,185,129,0.1)] transition group flex flex-col h-full relative overflow-hidden">
+            
+            {/* Header: Icon & Status */}
             <div className="flex justify-between items-start mb-4 relative z-10">
                 <div className="bg-slate-800 p-3 rounded-lg text-2xl shadow-inner group-hover:scale-110 transition">🛏️</div>
-                <span className={`text-[10px] font-bold px-2 py-1 rounded border uppercase ${badgeClass}`}>{item.status || 'available'}</span>
+                <span className={`text-[10px] font-bold px-2 py-1 rounded border uppercase ${badgeClass}`}>
+                    {rawStatus}
+                </span>
             </div>
-            <div className="mb-6 flex-1 relative z-10">
-                <div className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">Room No.</div>
-                <h3 className="text-3xl font-bold text-white mb-2 group-hover:text-emerald-400 transition">{item.name || item.room_number}</h3>
-                <div className="inline-flex items-center gap-1.5 bg-slate-800/50 px-2 py-1 rounded text-xs text-slate-300 border border-slate-700"><span>❄️</span> {item.type || 'Standard'}</div>
-            </div>
-            <div className="border-t border-slate-700 pt-4 flex justify-end items-center relative z-10">
 
+            {/* Main Room Info */}
+            <div className="mb-4 flex-1 relative z-10">
+                <div className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">Room No.</div>
+                <h3 className="text-3xl font-bold text-white mb-2 group-hover:text-emerald-400 transition">{displayName}</h3>
+                
+                <div className="inline-flex items-center gap-1.5 bg-slate-800/50 px-2 py-1 rounded text-xs text-slate-300 border border-slate-700">
+                    <span>{item.type === 'AC' ? '❄️' : '💨'}</span> {item.type || 'Standard'}
+                </div>
+            </div>
+
+            {/* Collapsible Details Section (Only shows when button is clicked) */}
+            {showDetails && (
+                <div className="mb-4 p-3 bg-slate-800/50 rounded-lg border border-slate-700 text-sm animate-fadeIn">
+                    {item.hostel_name && (
+                        <div className="mb-2">
+                            <span className="text-slate-500 text-xs block uppercase font-semibold">Hostel</span>
+                            <span className="text-slate-200">{item.hostel_name}</span>
+                        </div>
+                    )}
+                    {item.address && (
+                        <div className="mb-2">
+                            <span className="text-slate-500 text-xs block uppercase font-semibold">Address</span>
+                            <span className="text-slate-300 text-xs">{item.address}</span>
+                        </div>
+                    )}
+                    {item.contact_number && (
+                        <div>
+                            <span className="text-slate-500 text-xs block uppercase font-semibold">Contact</span>
+                            <span className="text-emerald-400 font-mono text-xs">{item.contact_number}</span>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Footer Actions */}
+            <div className="border-t border-slate-700 pt-4 flex justify-between items-center relative z-10">
+                
+                {/* Left Side: Toggle Details Button */}
+                {hasExtraDetails ? (
+                    <button 
+                        onClick={() => setShowDetails(!showDetails)}
+                        className="text-[11px] font-bold text-slate-400 hover:text-emerald-400 transition flex items-center gap-1 uppercase tracking-wide"
+                    >
+                        {showDetails ? 'Hide Info' : 'More Details'}
+                        <span className="text-[9px]">{showDetails ? '▲' : '▼'}</span>
+                    </button>
+                ) : (
+                    <span className="text-[10px] text-slate-600 font-medium select-none">SIMPLE VIEW</span>
+                )}
+
+                {/* Right Side: Delete Action */}
+                {onDelete && (
+                    <button 
+                        onClick={() => onDelete(item.id)} 
+                        className="text-red-400 text-xs font-bold hover:text-white transition bg-red-500/10 hover:bg-red-600 px-3 py-1.5 rounded-lg border border-red-500/20"
+                    >
+                        Delete
+                    </button>
+                )}
             </div>
         </div>
     );

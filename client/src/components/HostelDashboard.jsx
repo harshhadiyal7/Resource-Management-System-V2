@@ -2,6 +2,104 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+// --- SUB-COMPONENT: Room Card ---
+// This handles the individual card logic so each card opens/closes independently
+const RoomCard = ({ item, onEdit, onDelete }) => {
+    const [showDetails, setShowDetails] = useState(false);
+
+    // 1. Robust Data Handling
+    const displayName = item.room_number || item.item_name || 'Room';
+    const rawStatus = item.status || item.availability_status || 'Available';
+    const isAvailable = rawStatus.toLowerCase() === 'available';
+
+    // 2. Check if extra details exist (Hostel Name, Address, or Contact)
+    // If these are empty, we won't show the "More Details" button
+    const hasExtraDetails = (item.hostel_name && item.hostel_name.trim() !== "") || 
+                            (item.address && item.address.trim() !== "") || 
+                            (item.contact_number && item.contact_number.trim() !== "");
+
+    // 3. Styling Logic
+    const badgeClass = isAvailable
+        ? 'text-emerald-400 border-emerald-900 bg-emerald-900/20'
+        : 'text-red-400 border-red-900 bg-red-900/20';
+
+    return (
+        <div className="bg-[#1e293b] rounded-2xl border border-slate-700 p-5 hover:border-emerald-500/50 hover:shadow-[0_0_20px_rgba(16,185,129,0.1)] transition group flex flex-col h-full relative overflow-hidden">
+            
+            {/* Header: Icon & Status */}
+            <div className="flex justify-between items-start mb-4 relative z-10">
+                <div className="bg-slate-800 p-3 rounded-lg text-2xl shadow-inner group-hover:scale-110 transition">🛏️</div>
+                <span className={`text-[10px] font-bold px-2 py-1 rounded border uppercase ${badgeClass}`}>
+                    {rawStatus}
+                </span>
+            </div>
+
+            {/* Main Room Info */}
+            <div className="mb-4 flex-1 relative z-10">
+                <div className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">Room Number</div>
+                <h3 className="text-3xl font-bold text-white mb-2 group-hover:text-emerald-400 transition">{displayName}</h3>
+
+                <div className="inline-flex items-center gap-1.5 bg-slate-800/50 px-2 py-1 rounded text-xs text-slate-300 border border-slate-700">
+                    {/* Dynamic Icon based on AC/Non-AC */}
+                    <span>{item.type === 'AC' ? '❄️' : '💨'}</span> 
+                    {item.type || 'Standard'}
+                </div>
+            </div>
+
+            {/* Collapsible Details Section */}
+            {showDetails && (
+                <div className="mb-4 p-3 bg-slate-800/50 rounded-lg border border-slate-700 text-sm animate-fadeIn">
+                    {item.hostel_name && (
+                        <div className="mb-2">
+                            <span className="text-slate-500 text-xs block uppercase font-semibold">Hostel</span>
+                            <span className="text-slate-200">{item.hostel_name}</span>
+                        </div>
+                    )}
+                    {item.address && (
+                        <div className="mb-2">
+                            <span className="text-slate-500 text-xs block uppercase font-semibold">Address</span>
+                            <span className="text-slate-300 text-xs">{item.address}</span>
+                        </div>
+                    )}
+                    {item.contact_number && (
+                        <div>
+                            <span className="text-slate-500 text-xs block uppercase font-semibold">Contact</span>
+                            <span className="text-emerald-400 font-mono text-xs">{item.contact_number}</span>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Footer Actions */}
+            <div className="border-t border-slate-700 pt-4 flex justify-between items-center relative z-10">
+                {/* Only show 'More Details' if there is actually data to show */}
+                {hasExtraDetails ? (
+                    <button 
+                        onClick={() => setShowDetails(!showDetails)}
+                        className="text-[11px] font-bold text-slate-400 hover:text-emerald-400 transition flex items-center gap-1 uppercase tracking-wide"
+                    >
+                        {showDetails ? 'Hide Info' : 'More Details'}
+                        <span className="text-[9px]">{showDetails ? '▲' : '▼'}</span>
+                    </button>
+                ) : (
+                    <span className="text-[10px] text-slate-600 font-medium select-none">SIMPLE VIEW</span>
+                )}
+
+                <div className="flex gap-2">
+                    <button onClick={() => onEdit(item)} className="text-blue-400 text-xs font-bold hover:text-white transition bg-blue-500/10 hover:bg-blue-600 px-3 py-1.5 rounded-lg border border-blue-500/20">
+                        Edit
+                    </button>
+                    <button onClick={() => onDelete(item.id)} className="text-red-400 text-xs font-bold hover:text-white transition bg-red-500/10 hover:bg-red-600 px-3 py-1.5 rounded-lg border border-red-500/20">
+                        Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+
+// --- MAIN DASHBOARD COMPONENT ---
 const HostelDashboard = () => {
     const navigate = useNavigate();
     const token = localStorage.getItem('token');
@@ -10,11 +108,14 @@ const HostelDashboard = () => {
     const [loading, setLoading] = useState(false);
     const [editingId, setEditingId] = useState(null);
 
-    // Hostel only needs Name, Type, and Status (No Price)
+    // Form Data State including new fields
     const [formData, setFormData] = useState({
         name: '',
-        type: '',
-        status: 'Available'
+        type: 'Non-AC', // Default value
+        status: 'Available',
+        hostelName: '',
+        address: '',
+        contact: ''
     });
 
     const handleAuthError = (err) => {
@@ -41,14 +142,16 @@ const HostelDashboard = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        // Construct payload to match Backend expectation
         const payload = {
-            item_name: formData.name,
-            room_number: formData.name, // Send both to be safe
+            item_name: formData.name, // Used for Room Number
+            room_number: formData.name, // Fallback
             type: formData.type,
-
-            // ⚠️ CRITICAL FIX: Send both naming conventions
-            status: formData.status,
-            availability_status: formData.status
+            availability_status: formData.status,
+            // New fields
+            hostel_name: formData.hostelName,
+            address: formData.address,
+            contact_number: formData.contact
         };
 
         try {
@@ -59,8 +162,9 @@ const HostelDashboard = () => {
                 await axios.post('http://localhost:5000/api/hostel/add', payload, { headers: { Authorization: `Bearer ${token}` } });
                 alert("Room Added Successfully!");
             }
+            // Reset Form
             setEditingId(null);
-            setFormData({ name: '', type: '', status: 'Available' });
+            setFormData({ name: '', type: 'Non-AC', status: 'Available', hostelName: '', address: '', contact: '' });
             fetchItems();
         } catch (err) { handleAuthError(err); }
     };
@@ -76,18 +180,20 @@ const HostelDashboard = () => {
     const handleEditClick = (item) => {
         setEditingId(item.id);
 
-        // 1. Get raw status from DB
         let currentStatus = item.status || item.availability_status || 'Available';
-
-        // 2. Fix Capitalization (e.g. "OCCUPIED" -> "Occupied") to match your <option> values
+        // Capitalize status for dropdown match
         if (currentStatus) {
             currentStatus = currentStatus.charAt(0).toUpperCase() + currentStatus.slice(1).toLowerCase();
         }
 
         setFormData({
             name: item.room_number || item.item_name || '',
-            type: item.type || '',
-            status: currentStatus
+            type: item.type || 'Non-AC',
+            status: currentStatus,
+            // Load existing extra details if they exist
+            hostelName: item.hostel_name || '',
+            address: item.address || '',
+            contact: item.contact_number || ''
         });
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
@@ -101,112 +207,130 @@ const HostelDashboard = () => {
                 </header>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        {/* Room Number Input */}
-                        <input
-                            type="text"
-                            placeholder="Room Number (e.g. 101)"
-                            value={formData.name}
-                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            className="w-full bg-[#0f172a] border border-slate-600 rounded p-3 text-white placeholder-slate-500 focus:border-emerald-500 outline-none"
-                            required
-                        />
-
-                        {/* Type Input
-                        <input
-                            type="text"
-                            placeholder="Type (e.g. AC / Non-AC)"
-                            value={formData.type}
-                            onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                            className="w-full bg-[#0f172a] border border-slate-600 rounded p-3 text-white placeholder-slate-500 focus:border-emerald-500 outline-none"
-                            required
-                        /> */}
-
-                        {/* Status Select */}
-                        <select
-                            value={formData.status}
-                            onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                            className="w-full bg-[#0f172a] border border-slate-600 rounded p-3 text-white focus:border-emerald-500 outline-none"
-                        >
-                            <option value="Available">Available</option>
-                            <option value="Occupied">Occupied</option>
-
-                        </select>
-
-                        {/* Submit Button */}
-                        <button
-                            type="submit"
-                            className="w-full bg-emerald-600 hover:bg-emerald-700 py-3 rounded font-bold transition text-white"
-                        >
-                            {editingId ? 'Update Room' : 'Add Room'}
-                        </button>
-
-                        {/* Cancel Button (only shows when editing) */}
-                        {editingId && (
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setEditingId(null);
-                                    setFormData({ name: '', type: '', status: 'Available' });
-                                }}
-                                className="w-full mt-2 text-slate-400 hover:text-white transition"
-                            >
-                                Cancel
-                            </button>
-                        )}
-                    </form>
-                    {/* LIST */}
-                    <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {items.map(item => {
-                            // Robust Data Checking
-                            const displayName = item.room_number || item.item_name || 'Room';
-                            const rawStatus = item.status || item.availability_status || 'Available';
-                            const isAvailable = rawStatus.toLowerCase() === 'available';
-
-                            const badgeClass = isAvailable
-                                ? 'text-emerald-400 border-emerald-900 bg-emerald-900/20'
-                                : 'text-red-400 border-red-900 bg-red-900/20';
-
-                            return (
-                                <div key={item.id} className="bg-[#1e293b] rounded-2xl border border-slate-700 p-5 hover:border-emerald-500/50 hover:shadow-[0_0_20px_rgba(16,185,129,0.1)] transition group flex flex-col h-full relative overflow-hidden">
-
-                                    {/* 1. Header: Icon & Status */}
-                                    <div className="flex justify-between items-start mb-4 relative z-10">
-                                        <div className="bg-slate-800 p-3 rounded-lg text-2xl shadow-inner group-hover:scale-110 transition">🛏️</div>
-                                        <span className={`text-[10px] font-bold px-2 py-1 rounded border uppercase ${badgeClass}`}>
-                                            {rawStatus}
-                                        </span>
-                                    </div>
-
-                                    {/* 2. Room Details */}
-                                    <div className="mb-6 flex-1 relative z-10">
-                                        <div className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">Room Number</div>
-                                        <h3 className="text-3xl font-bold text-white mb-2 group-hover:text-emerald-400 transition">{displayName}</h3>
-
-                                        <div className="inline-flex items-center gap-1.5 bg-slate-800/50 px-2 py-1 rounded text-xs text-slate-300 border border-slate-700">
-                                            <span>❄️</span> {item.type || 'Standard'}
-                                        </div>
-                                    </div>
-
-                                    {/* 3. Footer Actions */}
-                                    <div className="border-t border-slate-700 pt-4 flex justify-between items-center relative z-10">
-                                        <div className="text-xs text-slate-500 font-bold">ACTIONS</div>
-                                        <div className="flex gap-3">
-                                            <button onClick={() => handleEditClick(item)} className="text-blue-400 text-xs font-bold hover:text-white transition bg-blue-500/10 hover:bg-blue-600 hover:shadow-lg hover:shadow-blue-500/30 px-3 py-1.5 rounded-lg border border-blue-500/20">
-                                                Edit
-                                            </button>
-                                            <button onClick={() => handleDelete(item.id)} className="text-red-400 text-xs font-bold hover:text-white transition bg-red-500/10 hover:bg-red-600 hover:shadow-lg hover:shadow-red-500/30 px-3 py-1.5 rounded-lg border border-red-500/20">
-                                                Delete
-                                            </button>
-                                        </div>
-                                    </div>
+                    {/* --- LEFT COLUMN: FORM --- */}
+                    <form onSubmit={handleSubmit} className="space-y-4 h-fit sticky top-6">
+                        <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700 shadow-xl">
+                            <h2 className="text-xl font-bold mb-4 text-emerald-400">
+                                {editingId ? 'Edit Room' : 'Add New Room'}
+                            </h2>
+                            
+                            <div className="space-y-3">
+                                {/* Room Number */}
+                                <div>
+                                    <label className="text-xs text-slate-400 uppercase font-bold ml-1">Room No.</label>
+                                    <input
+                                        type="text"
+                                        placeholder="e.g. 101"
+                                        value={formData.name}
+                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                        className="w-full mt-1 bg-[#0f172a] border border-slate-600 rounded p-3 text-white placeholder-slate-500 focus:border-emerald-500 outline-none transition"
+                                        required
+                                    />
                                 </div>
-                            );
-                        })}
+
+                                {/* AC / Non-AC Dropdown */}
+                                <div>
+                                    <label className="text-xs text-slate-400 uppercase font-bold ml-1">Room Type</label>
+                                    <select
+                                        value={formData.type}
+                                        onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                                        className="w-full mt-1 bg-[#0f172a] border border-slate-600 rounded p-3 text-white focus:border-emerald-500 outline-none transition"
+                                    >
+                                        <option value="Non-AC">Non-AC</option>
+                                        <option value="AC">AC</option>
+                                    </select>
+                                </div>
+
+                                {/* Status Dropdown */}
+                                <div>
+                                    <label className="text-xs text-slate-400 uppercase font-bold ml-1">Availability</label>
+                                    <select
+                                        value={formData.status}
+                                        onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                                        className="w-full mt-1 bg-[#0f172a] border border-slate-600 rounded p-3 text-white focus:border-emerald-500 outline-none transition"
+                                    >
+                                        <option value="Available">Available</option>
+                                        <option value="Occupied">Occupied</option>
+                                    </select>
+                                </div>
+
+                                {/* Divider for Extra Info */}
+                                <div className="border-t border-slate-700 my-4 pt-4">
+                                    <p className="text-sm font-bold text-slate-300 mb-3 flex items-center gap-2">
+                                        ℹ️ Optional Details
+                                    </p>
+                                    
+                                    <input
+                                        type="text"
+                                        placeholder="Hostel Name"
+                                        value={formData.hostelName}
+                                        onChange={(e) => setFormData({ ...formData, hostelName: e.target.value })}
+                                        className="w-full bg-[#0f172a] border border-slate-600 rounded p-3 mb-3 text-white placeholder-slate-500 focus:border-emerald-500 outline-none text-sm"
+                                    />
+                                    <input
+                                        type="text"
+                                        placeholder="Full Address"
+                                        value={formData.address}
+                                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                                        className="w-full bg-[#0f172a] border border-slate-600 rounded p-3 mb-3 text-white placeholder-slate-500 focus:border-emerald-500 outline-none text-sm"
+                                    />
+                                    <input
+                                        type="text"
+                                        placeholder="Contact Number"
+                                        value={formData.contact}
+                                        onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
+                                        className="w-full bg-[#0f172a] border border-slate-600 rounded p-3 text-white placeholder-slate-500 focus:border-emerald-500 outline-none text-sm"
+                                    />
+                                </div>
+                            </div>
+
+                            <button
+                                type="submit"
+                                className="w-full mt-4 bg-emerald-600 hover:bg-emerald-700 py-3 rounded-lg font-bold transition text-white shadow-lg shadow-emerald-500/20 active:scale-95 transform"
+                            >
+                                {editingId ? 'Update Room' : 'Add Room'}
+                            </button>
+
+                            {editingId && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setEditingId(null);
+                                        setFormData({ name: '', type: 'Non-AC', status: 'Available', hostelName: '', address: '', contact: '' });
+                                    }}
+                                    className="w-full mt-2 text-slate-400 hover:text-white transition text-sm py-2"
+                                >
+                                    Cancel
+                                </button>
+                            )}
+                        </div>
+                    </form>
+
+                    {/* --- RIGHT COLUMN: LIST --- */}
+                    <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6 auto-rows-min">
+                        {loading ? (
+                            <div className="text-center col-span-full py-10 text-slate-400 animate-pulse">Loading rooms...</div>
+                        ) : (
+                            items.map(item => (
+                                <RoomCard 
+                                    key={item.id} 
+                                    item={item} 
+                                    onEdit={handleEditClick} 
+                                    onDelete={handleDelete} 
+                                />
+                            ))
+                        )}
+                        {!loading && items.length === 0 && (
+                            <div className="text-center col-span-full py-10 border-2 border-dashed border-slate-700 rounded-xl">
+                                <p className="text-slate-500">No rooms found.</p>
+                                <p className="text-slate-600 text-sm mt-1">Fill the form to add your first room!</p>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
         </div>
     );
 };
+
 export default HostelDashboard;

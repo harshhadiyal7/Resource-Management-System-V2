@@ -1,4 +1,3 @@
-// backend/routes/hostel.js
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
@@ -15,9 +14,21 @@ router.get('/items', verifyToken, (req, res) => {
 
 // POST Add new item (Only Hostel & Admin)
 router.post('/add', verifyToken, checkRole(['hostel', 'admin']), (req, res) => {
-    const { item_name, type, availability_status } = req.body;
-    const sql = "INSERT INTO hostel_items (item_name, type, availability_status) VALUES (?, ?, ?)";
-    db.query(sql, [item_name, type, availability_status], (err, result) => {
+    // 1. Destructure the NEW fields from req.body
+    const { 
+        item_name, 
+        type, 
+        availability_status, 
+        hostel_name, 
+        address, 
+        contact_number 
+    } = req.body;
+
+    // 2. Update SQL to include new columns
+    const sql = "INSERT INTO hostel_items (item_name, type, availability_status, hostel_name, address, contact_number) VALUES (?, ?, ?, ?, ?, ?)";
+    
+    // 3. Add the new values to the array
+    db.query(sql, [item_name, type, availability_status, hostel_name, address, contact_number], (err, result) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ message: 'Hostel item added', id: result.insertId });
     });
@@ -26,9 +37,21 @@ router.post('/add', verifyToken, checkRole(['hostel', 'admin']), (req, res) => {
 // PUT Update item (Only Hostel & Admin)
 router.put('/update/:id', verifyToken, checkRole(['hostel', 'admin']), (req, res) => {
     const { id } = req.params;
-    const { item_name, type, availability_status } = req.body;
-    const sql = "UPDATE hostel_items SET item_name=?, type=?, availability_status=? WHERE id=?";
-    db.query(sql, [item_name, type, availability_status, id], (err, result) => {
+    // 1. Destructure the NEW fields
+    const { 
+        item_name, 
+        type, 
+        availability_status, 
+        hostel_name, 
+        address, 
+        contact_number 
+    } = req.body;
+
+    // 2. Update SQL to update the new columns
+    const sql = "UPDATE hostel_items SET item_name=?, type=?, availability_status=?, hostel_name=?, address=?, contact_number=? WHERE id=?";
+    
+    // 3. Add the new values to the array (Order must match the SQL ? marks)
+    db.query(sql, [item_name, type, availability_status, hostel_name, address, contact_number, id], (err, result) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ message: 'Hostel item updated successfully' });
     });

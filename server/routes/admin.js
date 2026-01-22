@@ -44,17 +44,33 @@ router.put('/users/:id/status', (req, res) => {
     });
 });
 
+
 // 4. GET ALL INVENTORY (Aggregated from 3 tables)
+// 4. GET ALL INVENTORY
 router.get('/inventory', (req, res) => {
     const inventoryData = [];
 
-    // Query 1: Canteen
     const sqlCanteen = "SELECT id, item_name as name, price, 'CANTEEN' as category, quantity, 'Available' as status FROM canteen_items"; 
-    // Query 2: Stationery
     const sqlStationery = "SELECT id, item_name as name, price, 'STATIONERY' as category, stock_level, 'Available' as status FROM stationery_items";
-    // Query 3: Hostel
-   const sqlHostel = "SELECT id, item_name as name, 0 as price, 'HOSTEL' as category, availability_status as status FROM hostel_items";
-    // Execute sequentially
+    
+    // 🔴 FIX IS HERE: 
+    // We removed 'room_number' from the column list because it doesn't exist in your DB table.
+    // Instead, we select 'item_name' twice: once as 'name' and once as 'room_number' so your frontend works perfectly.
+    const sqlHostel = `
+        SELECT 
+            id, 
+            item_name as name, 
+            item_name as room_number, 
+            type, 
+            hostel_name, 
+            address, 
+            contact_number, 
+            0 as price, 
+            'HOSTEL' as category, 
+            availability_status as status 
+        FROM hostel_items
+    `;
+
     db.query(sqlCanteen, (err, canteenItems) => {
         if (!err) inventoryData.push(...canteenItems);
 
@@ -62,9 +78,12 @@ router.get('/inventory', (req, res) => {
             if (!err) inventoryData.push(...stationeryItems);
 
             db.query(sqlHostel, (err, hostelItems) => {
-                if (!err) inventoryData.push(...hostelItems);
+                if (err) {
+                    console.error("HOSTEL ERROR:", err.message); // This will now help us if there are other issues
+                } else if (hostelItems) {
+                    inventoryData.push(...hostelItems);
+                }
                 
-                // Send combined list
                 res.json(inventoryData);
             });
         });

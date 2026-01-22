@@ -162,35 +162,105 @@ const StationeryCard = ({ item }) => {
     );
 };
 
-// --- 3. HOSTEL CARD (Room Booking Style) ---
+// --- 3. HOSTEL CARD (Student View) ---
 const HostelCard = ({ item }) => {
-    // Robust Status Check
-    const statusText = item.availability_status || item.status || 'available';
-    const isAvailable = statusText.toLowerCase() === 'available';
+    // 1. State for toggling details
+    const [showDetails, setShowDetails] = useState(false);
+
+    // 2. Smart Name Logic (Fixes "Room" vs "302" issue)
+    const displayName = item.room_number || item.item_name || 'Room';
+    
+    // 3. Robust Status Check
+    const rawStatus = item.availability_status || item.status || 'available';
+    const isAvailable = rawStatus.toLowerCase() === 'available';
+
+    // 4. Check if Extra Details Exist (Hostel Name, Address, Contact)
+    // The button will ONLY appear if this data is actually present
+    const hasExtraDetails = (item.hostel_name && item.hostel_name.trim() !== "") || 
+                            (item.address && item.address.trim() !== "") || 
+                            (item.contact_number && item.contact_number.trim() !== "");
+
+    // 5. Styling Classes
     const badgeClass = isAvailable 
         ? 'text-emerald-400 border-emerald-900 bg-emerald-900/20' 
         : 'text-red-400 border-red-900 bg-red-900/20';
 
+    const buttonClass = isAvailable
+        ? 'border-emerald-500 text-emerald-400 hover:bg-emerald-500 hover:text-white shadow-[0_0_15px_rgba(16,185,129,0.2)]'
+        : 'border-slate-700 text-slate-500 cursor-not-allowed bg-slate-800/50';
+
     return (
         <div className="bg-[#1e293b] rounded-2xl border border-slate-700 p-5 hover:border-emerald-500/50 hover:shadow-[0_0_20px_rgba(16,185,129,0.1)] transition group relative h-full flex flex-col">
+            
+            {/* --- HEADER: Icon & Status --- */}
             <div className="flex justify-between items-start mb-4">
-                <div className="bg-slate-800 p-3 rounded-lg text-2xl">🛏️</div>
+                <div className="bg-slate-800 p-3 rounded-lg text-2xl shadow-inner group-hover:scale-110 transition">🛏️</div>
                 <span className={`text-[10px] font-bold px-2 py-1 rounded border uppercase ${badgeClass}`}>
-                    {statusText}
+                    {rawStatus}
                 </span>
             </div>
             
-            <div className="mb-6 flex-1">
+            {/* --- MAIN INFO: Room Number & Type --- */}
+            <div className="mb-4 flex-1">
                 <div className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">Room No.</div>
-                <h3 className="text-3xl font-bold text-white mb-2">{item.room_number || item.item_name}</h3>
-                <div className="inline-flex items-center gap-1.5 bg-slate-800/50 px-2 py-1 rounded text-xs text-slate-300">
-                    <span>❄️</span> {item.type || 'Standard Room'}
+                <h3 className="text-3xl font-bold text-white mb-2 group-hover:text-emerald-400 transition">{displayName}</h3>
+                
+                <div className="inline-flex items-center gap-1.5 bg-slate-800/50 px-2 py-1 rounded text-xs text-slate-300 border border-slate-700">
+                    {/* Dynamic Icon: Snowflake for AC, Wind for Non-AC */}
+                    <span>{item.type === 'AC' ? '❄️' : '💨'}</span> 
+                    {item.type || 'Standard Room'}
                 </div>
             </div>
 
-            <button className={`w-full py-2 rounded-lg text-xs font-bold transition border ${isAvailable ? 'border-emerald-500 text-emerald-400 hover:bg-emerald-500 hover:text-white' : 'border-slate-700 text-slate-500 cursor-not-allowed'}`}>
-                {isAvailable ? 'Request Booking' : 'Occupied'}
-            </button>
+            {/* --- COLLAPSIBLE DETAILS (Only visible when toggled) --- */}
+            {showDetails && (
+                <div className="mb-4 p-3 bg-slate-800/50 rounded-lg border border-slate-700 text-sm animate-fadeIn">
+                    {item.hostel_name && (
+                        <div className="mb-2">
+                            <span className="text-slate-500 text-xs block uppercase font-semibold">Hostel</span>
+                            <span className="text-slate-200">{item.hostel_name}</span>
+                        </div>
+                    )}
+                    {item.address && (
+                        <div className="mb-2">
+                            <span className="text-slate-500 text-xs block uppercase font-semibold">Address</span>
+                            <span className="text-slate-300 text-xs">{item.address}</span>
+                        </div>
+                    )}
+                    {item.contact_number && (
+                        <div>
+                            <span className="text-slate-500 text-xs block uppercase font-semibold">Contact</span>
+                            <span className="text-emerald-400 font-mono text-xs">{item.contact_number}</span>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* --- FOOTER ACTIONS --- */}
+            <div className="mt-auto pt-3 border-t border-slate-700/50">
+                {/* 1. Toggle Button (Only if details exist) */}
+                <div className="flex justify-between items-center mb-3 h-5">
+                    {hasExtraDetails ? (
+                        <button 
+                            onClick={() => setShowDetails(!showDetails)}
+                            className="text-[11px] font-bold text-slate-400 hover:text-emerald-400 transition flex items-center gap-1 uppercase tracking-wide"
+                        >
+                            {showDetails ? 'Hide Info' : 'More Details'}
+                            <span className="text-[9px]">{showDetails ? '▲' : '▼'}</span>
+                        </button>
+                    ) : (
+                        <span className="text-[10px] text-slate-600 font-medium select-none">Basic View</span>
+                    )}
+                </div>
+
+                {/* 2. Main Booking Button (Full Width) */}
+                <button 
+                    disabled={!isAvailable}
+                    className={`w-full py-2.5 rounded-lg text-xs font-bold transition border uppercase tracking-wider ${buttonClass}`}
+                >
+                    {isAvailable ? 'Request Booking' : 'Occupied'}
+                </button>
+            </div>
         </div>
     );
 };
