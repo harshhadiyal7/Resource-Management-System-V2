@@ -46,7 +46,7 @@ const RegistrationPage = () => {
       // Add 'role' to the data before sending
       const payload = { ...formData, role: role };
       
-      await axios.post('http://localhost:5000/register', payload);
+      await axios.post('http://https://harsh-rms.vercel.app/register', payload);
 
       alert("Registration Successful! Please Login.");
       navigate(`/login/${role}`);

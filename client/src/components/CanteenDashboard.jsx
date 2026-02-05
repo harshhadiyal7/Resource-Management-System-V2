@@ -32,7 +32,7 @@ const CanteenDashboard = () => {
   const fetchItems = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('http://localhost:5000/api/canteen/items', {
+      const response = await axios.get('http://https://harsh-rms.vercel.app/api/canteen/items', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setItems(response.data);
@@ -59,10 +59,10 @@ const CanteenDashboard = () => {
 
     try {
       if (editingId) {
-        await axios.put(`http://localhost:5000/api/canteen/update/${editingId}`, payload, { headers: { Authorization: `Bearer ${token}` } });
+        await axios.put(`http://https://harsh-rms.vercel.app/api/canteen/update/${editingId}`, payload, { headers: { Authorization: `Bearer ${token}` } });
         alert("Food Item Updated!");
       } else {
-        await axios.post('http://localhost:5000/api/canteen/add', payload, { headers: { Authorization: `Bearer ${token}` } });
+        await axios.post('http://https://harsh-rms.vercel.app/api/canteen/add', payload, { headers: { Authorization: `Bearer ${token}` } });
         alert("Food Item Added!");
       }
       setEditingId(null);
@@ -74,7 +74,7 @@ const CanteenDashboard = () => {
   const handleDelete = async (id) => {
     if(!window.confirm("Delete this food item?")) return;
     try {
-      await axios.delete(`http://localhost:5000/api/canteen/delete/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+      await axios.delete(`http://https://harsh-rms.vercel.app/api/canteen/delete/${id}`, { headers: { Authorization: `Bearer ${token}` } });
       setItems(items.filter(i => i.id !== id));
     } catch (err) { handleAuthError(err); }
   };

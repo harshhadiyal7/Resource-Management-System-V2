@@ -14,7 +14,7 @@ const AdminLoginPage = () => {
 
     try {
       // 1. Send POST request to your backend
-      const res = await axios.post("http://localhost:5000/login", {
+      const res = await axios.post("http://https://harsh-rms.vercel.app/login", {
         email: email,
         password: password,
       });

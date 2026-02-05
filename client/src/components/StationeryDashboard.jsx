@@ -28,7 +28,7 @@ const StationeryDashboard = () => {
   const fetchItems = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('http://localhost:5000/api/stationery/items', { headers: { Authorization: `Bearer ${token}` } });
+      const response = await axios.get('http://https://harsh-rms.vercel.app/api/stationery/items', { headers: { Authorization: `Bearer ${token}` } });
       setItems(response.data);
     } catch (err) { handleAuthError(err); } finally { setLoading(false); }
   };
@@ -49,10 +49,10 @@ const StationeryDashboard = () => {
 
     try {
       if (editingId) {
-        await axios.put(`http://localhost:5000/api/stationery/update/${editingId}`, payload, { headers: { Authorization: `Bearer ${token}` } });
+        await axios.put(`http://https://harsh-rms.vercel.app/api/stationery/update/${editingId}`, payload, { headers: { Authorization: `Bearer ${token}` } });
         alert("Item Updated!");
       } else {
-        await axios.post('http://localhost:5000/api/stationery/add', payload, { headers: { Authorization: `Bearer ${token}` } });
+        await axios.post('http://https://harsh-rms.vercel.app/api/stationery/add', payload, { headers: { Authorization: `Bearer ${token}` } });
         alert("Item Added!");
       }
       setEditingId(null);
@@ -64,7 +64,7 @@ const StationeryDashboard = () => {
   const handleDelete = async (id) => {
     if(!window.confirm("Delete this item?")) return;
     try {
-      await axios.delete(`http://localhost:5000/api/stationery/delete/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+      await axios.delete(`http://https://harsh-rms.vercel.app/api/stationery/delete/${id}`, { headers: { Authorization: `Bearer ${token}` } });
       setItems(items.filter(i => i.id !== id));
     } catch (err) { handleAuthError(err); }
   };

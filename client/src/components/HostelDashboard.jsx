@@ -129,7 +129,7 @@ const HostelDashboard = () => {
     const fetchItems = async () => {
         setLoading(true);
         try {
-            const response = await axios.get('http://localhost:5000/api/hostel/items', { headers: { Authorization: `Bearer ${token}` } });
+            const response = await axios.get('http://https://harsh-rms.vercel.app/api/hostel/items', { headers: { Authorization: `Bearer ${token}` } });
             setItems(response.data);
         } catch (err) { handleAuthError(err); } finally { setLoading(false); }
     };
@@ -156,10 +156,10 @@ const HostelDashboard = () => {
 
         try {
             if (editingId) {
-                await axios.put(`http://localhost:5000/api/hostel/update/${editingId}`, payload, { headers: { Authorization: `Bearer ${token}` } });
+                await axios.put(`http://https://harsh-rms.vercel.app/api/hostel/update/${editingId}`, payload, { headers: { Authorization: `Bearer ${token}` } });
                 alert("Room Updated Successfully!");
             } else {
-                await axios.post('http://localhost:5000/api/hostel/add', payload, { headers: { Authorization: `Bearer ${token}` } });
+                await axios.post('http://https://harsh-rms.vercel.app/api/hostel/add', payload, { headers: { Authorization: `Bearer ${token}` } });
                 alert("Room Added Successfully!");
             }
             // Reset Form
@@ -172,7 +172,7 @@ const HostelDashboard = () => {
     const handleDelete = async (id) => {
         if (!window.confirm("Delete this room?")) return;
         try {
-            await axios.delete(`http://localhost:5000/api/hostel/delete/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+            await axios.delete(`http://https://harsh-rms.vercel.app/api/hostel/delete/${id}`, { headers: { Authorization: `Bearer ${token}` } });
             setItems(items.filter(i => i.id !== id));
         } catch (err) { handleAuthError(err); }
     };

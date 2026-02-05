@@ -44,7 +44,7 @@ const AdminDashboard = () => {
             const token = localStorage.getItem('token');
             if (!token) return navigate('/login/admin');
 
-            const userRes = await axios.get('http://localhost:5000/api/admin/users', { headers: { Authorization: `Bearer ${token}` } });
+            const userRes = await axios.get('http://https://harsh-rms.vercel.app/api/admin/users', { headers: { Authorization: `Bearer ${token}` } });
             const formattedUsers = userRes.data.map(user => ({
                 id: user.id,
                 name: user.full_name,
@@ -53,7 +53,7 @@ const AdminDashboard = () => {
             }));
             setUsers(formattedUsers);
 
-            const invRes = await axios.get('http://localhost:5000/api/admin/inventory', { headers: { Authorization: `Bearer ${token}` } });
+            const invRes = await axios.get('http://https://harsh-rms.vercel.app/api/admin/inventory', { headers: { Authorization: `Bearer ${token}` } });
             setInventory(invRes.data);
 
         } catch (error) {
@@ -67,7 +67,7 @@ const AdminDashboard = () => {
     const fetchInventorySilent = useCallback(async () => {
         try {
             const token = localStorage.getItem('token');
-            const invRes = await axios.get(`http://localhost:5000/api/admin/inventory?t=${Date.now()}`, { headers: { Authorization: `Bearer ${token}` } });
+            const invRes = await axios.get(`http://https://harsh-rms.vercel.app/api/admin/inventory?t=${Date.now()}`, { headers: { Authorization: `Bearer ${token}` } });
             setInventory(invRes.data);
         } catch (error) { console.error("Sync failed"); }
     }, []);
@@ -94,7 +94,7 @@ const AdminDashboard = () => {
 
         try {
             // 2. Send update to backend
-            await axios.put(`http://localhost:5000/api/admin/users/${userId}/status`, { status: newStatus }, { headers: { Authorization: `Bearer ${token}` } });
+            await axios.put(`http://https://harsh-rms.vercel.app/api/admin/users/${userId}/status`, { status: newStatus }, { headers: { Authorization: `Bearer ${token}` } });
 
             // 3. Update UI immediately
             setUsers(users.map(u => u.id === userId ? { ...u, status: newStatus } : u));
@@ -108,7 +108,7 @@ const AdminDashboard = () => {
         if (window.confirm(`Delete User ID: ${userId}?`)) {
             const token = localStorage.getItem('token');
             try {
-                await axios.delete(`http://localhost:5000/api/admin/users/${userId}`, { headers: { Authorization: `Bearer ${token}` } });
+                await axios.delete(`http://https://harsh-rms.vercel.app/api/admin/users/${userId}`, { headers: { Authorization: `Bearer ${token}` } });
                 setUsers(users.map(u => u.id === userId ? { ...u, status: 'deleted' } : u));
             } catch (err) { alert("Failed to delete user."); }
         }
@@ -119,7 +119,7 @@ const AdminDashboard = () => {
         const token = localStorage.getItem('token');
         try {
             const endpoint = category.toLowerCase();
-            await axios.delete(`http://localhost:5000/api/${endpoint}/delete/${itemId}`, { headers: { Authorization: `Bearer ${token}` } });
+            await axios.delete(`http://https://harsh-rms.vercel.app/api/${endpoint}/delete/${itemId}`, { headers: { Authorization: `Bearer ${token}` } });
             setInventory(inventory.filter(item => item.id !== itemId));
         } catch (err) { alert("Delete failed."); }
     };

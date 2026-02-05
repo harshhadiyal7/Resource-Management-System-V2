@@ -26,9 +26,9 @@ const StudentDashboard = () => {
 
       try {
         let url = '';
-        if (activeTab === 'canteen') url = 'http://localhost:5000/api/student/canteen-menu';
-        if (activeTab === 'stationery') url = 'http://localhost:5000/api/student/stationery-list';
-        if (activeTab === 'hostel') url = 'http://localhost:5000/api/student/hostel-status';
+        if (activeTab === 'canteen') url = 'http://https://harsh-rms.vercel.app/api/student/canteen-menu';
+        if (activeTab === 'stationery') url = 'http://https://harsh-rms.vercel.app/api/student/stationery-list';
+        if (activeTab === 'hostel') url = 'http://https://harsh-rms.vercel.app/api/student/hostel-status';
 
         const response = await axios.get(url, {
           headers: { Authorization: `Bearer ${token}` }
