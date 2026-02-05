@@ -20,7 +20,7 @@ const SECRET_KEY = process.env.JWT_SECRET;
 
 // Middleware
 app.use(cors({
-    origin: ["https://harsh-rms.netlify.app", "http://localhost:5173"],
+    origin: ["https://harsh-rms1.vercel.app", "http://localhost:5173"],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true
 }));
