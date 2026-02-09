@@ -132,7 +132,7 @@ const AdminDashboard = () => {
     // --- FILTERING LOGIC ---
     const filteredInventory = activeTab === 'ALL' ? inventory : inventory.filter(item => item.category === activeTab);
 
-    // 🔍 Search Users Logic
+    // 🔍 Search Users Logic.
     const filteredUsers = users.filter(user =>
         user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.role.toLowerCase().includes(searchTerm.toLowerCase())
