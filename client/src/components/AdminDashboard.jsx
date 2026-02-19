@@ -132,7 +132,7 @@ const AdminDashboard = () => {
     // --- FILTERING LOGIC ---
     const filteredInventory = activeTab === 'ALL' ? inventory : inventory.filter(item => item.category === activeTab);
 
-    // 🔍 Search Users Logic.
+    // 🔍 Search Users Logic.-
     const filteredUsers = users.filter(user =>
         user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.role.toLowerCase().includes(searchTerm.toLowerCase())
@@ -443,7 +443,7 @@ const AdminHostelCard = ({ item, onDelete }) => {
                     <span className="text-[10px] text-slate-600 font-medium select-none">SIMPLE VIEW</span>
                 )}
 
-                {/* Right Side: Delete Action */}
+                {/* Right Side: Delete Action  */}
                 {onDelete && (
                     <button 
                         onClick={() => onDelete(item.id)} 
